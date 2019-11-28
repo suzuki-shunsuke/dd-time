@@ -1,0 +1,66 @@
+---
+kind: pipeline
+name: build
+clone:
+  depth: 1
+volumes:
+- name: gopath
+  temp: {}
+steps:
+- name: download go modules
+  image: &image_go golang:1.13.4
+  commands:
+  - go mod download
+  volumes: &volumes
+  - name: gopath
+    path: /go
+  environment:
+    GOPATH: /go
+- name: golangci-lint
+  image: golangci/golangci-lint:v1.21.0-alpine
+  commands:
+  - golangci-lint run
+  environment:
+    GOPATH: /go
+  volumes: *volumes
+
+- name: fetch tags to release
+  image: plugins/git
+  commands:
+  - git fetch --tags
+  - git checkout -- .
+  when:
+    event:
+    - tag
+- name: release
+  image: &goreleaser goreleaser/goreleaser:v0.123.3
+  commands:
+  - goreleaser release
+  environment:
+    GOPATH: /go
+    GITHUB_TOKEN:
+      from_secret: github_token
+  volumes: *volumes
+  when:
+    event:
+    - tag
+
+- name: create a dummy tag to test releasing
+  image: plugins/git
+  commands:
+  - git tag v0.1.0-alpha
+  when:
+    event:
+    - pull_request
+    - push
+- name: release (skip publish)
+  image: *goreleaser
+  commands:
+  - goreleaser release --skip-publish
+  environment:
+    GOPATH: /go
+  volumes: *volumes
+  when:
+    event:
+    - pull_request
+    - push
