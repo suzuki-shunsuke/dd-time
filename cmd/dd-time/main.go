@@ -18,31 +18,67 @@ func main() {
 	}
 }
 
-func core() error {
+type (
+	options struct {
+		Help          bool
+		Version       bool
+		MetricName    string
+		MetricHost    string
+		DataDogAPIKey string
+		Tags          []string
+		Args          []string
+	}
+)
+
+func parseArgs() options {
 	helpF := pflag.BoolP("help", "h", false, "Show this help message")
 	verF := pflag.BoolP("version", "v", false, "Show the version")
 	metricNameF := pflag.StringP("metric-name", "m", "command-execution-time", "The name of the time series")
 	metricHostF := pflag.String("host", "", "The name of the host that produced the metric")
 	tagsF := pflag.StringSliceP("tag", "t", nil, "DataDog tags. The format is 'key:value'")
 	pflag.Parse()
-	if *helpF {
+	return options{
+		Help:          *helpF,
+		Version:       *verF,
+		MetricName:    *metricNameF,
+		MetricHost:    *metricHostF,
+		DataDogAPIKey: os.Getenv("DATADOG_API_KEY"),
+		Tags:          *tagsF,
+		Args:          pflag.Args(),
+	}
+}
+
+func validateOpts(opts options) error {
+	if opts.DataDogAPIKey == "" {
+		return errors.New("The environment variable 'DATADOG_API_KEY' is required")
+	}
+	if len(opts.Args) == 0 {
+		return errors.New("executed command isn't passed to dd-time")
+	}
+	return nil
+}
+
+func core() error {
+	opts := parseArgs()
+
+	if opts.Help {
 		fmt.Println(constant.Help)
 		return nil
 	}
-	if *verF {
+	if opts.Version {
 		fmt.Println(constant.Version)
 		return nil
 	}
-	ddAPIKey := os.Getenv("DATADOG_API_KEY")
-	if ddAPIKey == "" {
-		return errors.New("The environment variable 'DATADOG_API_KEY' is required")
+
+	if err := validateOpts(opts); err != nil {
+		return err
 	}
 
 	return cmd.Main(cmd.Params{
-		DataDogAPIKey: ddAPIKey,
-		Args:          pflag.Args(),
-		Tags:          *tagsF,
-		MetricName:    *metricNameF,
-		MetricHost:    *metricHostF,
+		DataDogAPIKey: opts.DataDogAPIKey,
+		Args:          opts.Args,
+		Tags:          opts.Tags,
+		MetricName:    opts.MetricName,
+		MetricHost:    opts.MetricHost,
 	})
 }

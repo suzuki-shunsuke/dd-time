@@ -22,6 +22,10 @@ type (
 		Args          []string
 		Tags          []string
 	}
+
+	metricsPoster interface {
+		PostMetrics(series []datadog.Metric) error
+	}
 )
 
 func Main(params Params) error {
@@ -60,19 +64,7 @@ func Main(params Params) error {
 			if err != nil {
 				return err
 			}
-			now := float64(time.Now().Unix())
-			metric := datadog.Metric{
-				Metric: &params.MetricName,
-				Tags:   params.Tags,
-				Points: []datadog.DataPoint{{&now, &duration}},
-			}
-			if params.MetricHost != "" {
-				metric.Host = &params.MetricHost
-			}
-			if err := ddClient.PostMetrics([]datadog.Metric{metric}); err != nil {
-				fmt.Fprintln(os.Stderr, "send a time series metrics to DataDog: %w", err)
-				return nil
-			}
+			return send(duration, params, ddClient)
 		case sig := <-signalChan:
 			if _, ok := sentSignals[sig]; ok {
 				continue
@@ -81,4 +73,22 @@ func Main(params Params) error {
 			runner.SendSignal(sig.(syscall.Signal))
 		}
 	}
+}
+
+func send(duration float64, params Params, ddClient metricsPoster) error {
+	now := float64(time.Now().Unix())
+	metric := datadog.Metric{
+		Metric: &params.MetricName,
+		Tags:   params.Tags,
+		Points: []datadog.DataPoint{{&now, &duration}},
+	}
+	if params.MetricHost != "" {
+		metric.Host = &params.MetricHost
+	}
+	if err := ddClient.PostMetrics([]datadog.Metric{metric}); err != nil {
+		fmt.Fprintln(os.Stderr, "send a time series metrics to DataDog: %w", err)
+		return nil
+	}
+
+	return nil
 }
