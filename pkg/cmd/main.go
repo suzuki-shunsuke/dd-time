@@ -64,7 +64,7 @@ func Main(params Params) error {
 			if err != nil {
 				return err
 			}
-			return send(duration, params, ddClient)
+			return send(duration, time.Now(), params, ddClient)
 		case sig := <-signalChan:
 			if _, ok := sentSignals[sig]; ok {
 				continue
@@ -75,12 +75,12 @@ func Main(params Params) error {
 	}
 }
 
-func send(duration float64, params Params, ddClient metricsPoster) error {
-	now := float64(time.Now().Unix())
+func send(duration float64, now time.Time, params Params, ddClient metricsPoster) error {
+	nowF := float64(now.Unix())
 	metric := datadog.Metric{
 		Metric: &params.MetricName,
 		Tags:   params.Tags,
-		Points: []datadog.DataPoint{{&now, &duration}},
+		Points: []datadog.DataPoint{{&nowF, &duration}},
 	}
 	if params.MetricHost != "" {
 		metric.Host = &params.MetricHost
