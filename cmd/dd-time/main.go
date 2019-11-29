@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -48,16 +47,6 @@ func parseArgs() options {
 	}
 }
 
-func validateOpts(opts options) error {
-	if opts.DataDogAPIKey == "" {
-		return errors.New("The environment variable 'DATADOG_API_KEY' is required")
-	}
-	if len(opts.Args) == 0 {
-		return errors.New("executed command isn't passed to dd-time")
-	}
-	return nil
-}
-
 func core() error {
 	opts := parseArgs()
 
@@ -68,10 +57,6 @@ func core() error {
 	if opts.Version {
 		fmt.Println(constant.Version)
 		return nil
-	}
-
-	if err := validateOpts(opts); err != nil {
-		return err
 	}
 
 	return cmd.Main(cmd.Params{

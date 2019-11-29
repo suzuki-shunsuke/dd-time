@@ -28,9 +28,19 @@ type (
 	}
 )
 
-func Main(params Params) error {
+func validateParams(params Params) error {
+	if params.DataDogAPIKey == "" {
+		return errors.New("The environment variable 'DATADOG_API_KEY' is required")
+	}
 	if len(params.Args) == 0 {
 		return errors.New("executed command isn't passed to dd-time")
+	}
+	return nil
+}
+
+func Main(params Params) error {
+	if err := validateParams(params); err != nil {
+		return err
 	}
 
 	ddClient := datadog.NewClient(params.DataDogAPIKey, "")
