@@ -38,3 +38,8 @@ tasks:
   script: time drone exec --pipeline build --event pull_request
   environment:
     LOCAL: "true"
+- name: mock
+  short: m
+  description: create mocks (gomic is required)
+  usage: create mocks (gomic is required)
+  script: gomic gen && cmdx fmt
