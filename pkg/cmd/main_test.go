@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/suzuki-shunsuke/go-ptr"
 	"github.com/suzuki-shunsuke/gomic/gomic"
+	"github.com/zorkian/go-datadog-api"
 
 	"github.com/suzuki-shunsuke/dd-time/pkg/mock"
 )
@@ -51,29 +53,53 @@ func Test_send(t *testing.T) {
 	data := []struct {
 		title    string
 		isErr    bool
+		ddClient metricsPoster
+		metrics  []datadog.Metric
+	}{
+		{
+			title:    "success",
+			ddClient: mock.NewMetricsPoster(t, gomic.DoNothing),
+			metrics:  []datadog.Metric{},
+		},
+	}
+	for _, d := range data {
+		t.Run(d.title, func(t *testing.T) {
+			err := send(d.metrics, d.ddClient)
+			if d.isErr {
+				assert.NotNil(t, err)
+				return
+			}
+			assert.Nil(t, err)
+		})
+	}
+}
+
+func Test_getMetrics(t *testing.T) {
+	data := []struct {
+		title    string
+		exp      []datadog.Metric
 		duration float64
 		now      time.Time
-		ddClient metricsPoster
 		params   Params
 	}{
 		{
 			title:    "success",
 			duration: 5,
 			now:      time.Date(2019, 2, 10, 12, 0, 0, 0, time.UTC),
-			ddClient: mock.NewMetricsPoster(t, gomic.DoNothing),
 			params: Params{
 				MetricName: "command-execution-time",
+			},
+			exp: []datadog.Metric{
+				{
+					Metric: ptr.PStr("command-execution-time"),
+					Points: []datadog.DataPoint{{ptr.PFloat64(1.5498e+09), ptr.PFloat64(5)}},
+				},
 			},
 		},
 	}
 	for _, d := range data {
 		t.Run(d.title, func(t *testing.T) {
-			err := send(d.duration, d.now, d.params, d.ddClient)
-			if d.isErr {
-				assert.NotNil(t, err)
-				return
-			}
-			assert.Nil(t, err)
+			assert.Equal(t, d.exp, getMetrics(d.duration, d.now, d.params))
 		})
 	}
 }
