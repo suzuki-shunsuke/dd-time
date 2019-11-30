@@ -1,5 +1,11 @@
 # dd-time
 
+[![Build Status](https://cloud.drone.io/api/badges/suzuki-shunsuke/dd-time/status.svg)](https://cloud.drone.io/suzuki-shunsuke/dd-time)
+[![codecov](https://codecov.io/gh/suzuki-shunsuke/dd-time/branch/master/graph/badge.svg)](https://codecov.io/gh/suzuki-shunsuke/dd-time)
+[![Go Report Card](https://goreportcard.com/badge/github.com/suzuki-shunsuke/dd-time)](https://goreportcard.com/report/github.com/suzuki-shunsuke/dd-time)
+[![GitHub last commit](https://img.shields.io/github/last-commit/suzuki-shunsuke/dd-time.svg)](https://github.com/suzuki-shunsuke/dd-time)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/dd-time/master/LICENSE)
+
 CLI tool to post the command execution time as time-series data to DataDog.
 
 `dd-time` is inspired to [circle-dd-bench](https://github.com/yuya-takeyama/circle-dd-bench).
