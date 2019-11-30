@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
@@ -50,6 +51,7 @@ func Test_validateParams(t *testing.T) {
 }
 
 func Test_send(t *testing.T) {
+	ddOutput := bytes.NewBufferString("")
 	data := []struct {
 		title    string
 		isErr    bool
@@ -64,7 +66,7 @@ func Test_send(t *testing.T) {
 	}
 	for _, d := range data {
 		t.Run(d.title, func(t *testing.T) {
-			err := send(d.metrics, d.ddClient)
+			err := send(d.metrics, d.ddClient, ddOutput)
 			if d.isErr {
 				assert.NotNil(t, err)
 				return

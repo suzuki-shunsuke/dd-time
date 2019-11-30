@@ -24,6 +24,7 @@ type (
 		MetricName    string
 		MetricHost    string
 		DataDogAPIKey string
+		Output        string
 		Tags          []string
 		Args          []string
 	}
@@ -34,6 +35,7 @@ func parseArgs() options {
 	verF := pflag.BoolP("version", "v", false, "Show the version")
 	metricNameF := pflag.StringP("metric-name", "m", "command-execution-time", "The name of the time series")
 	metricHostF := pflag.String("host", "", "The name of the host that produced the metric")
+	outputDDTimeF := pflag.StringP("output", "o", "", "The file path where the dd-time's standard error output is written")
 	tagsF := pflag.StringSliceP("tag", "t", nil, "DataDog tags. The format is 'key:value'")
 	pflag.Parse()
 	return options{
@@ -44,6 +46,7 @@ func parseArgs() options {
 		DataDogAPIKey: os.Getenv("DATADOG_API_KEY"),
 		Tags:          *tagsF,
 		Args:          pflag.Args(),
+		Output:        *outputDDTimeF,
 	}
 }
 
@@ -65,5 +68,6 @@ func core() error {
 		Tags:          opts.Tags,
 		MetricName:    opts.MetricName,
 		MetricHost:    opts.MetricHost,
+		Output:        opts.Output,
 	})
 }

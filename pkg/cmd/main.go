@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -19,6 +21,7 @@ type (
 		MetricName    string
 		MetricHost    string
 		DataDogAPIKey string
+		Output        string
 		Args          []string
 		Tags          []string
 	}
@@ -83,6 +86,31 @@ func Main(params Params) error {
 	cmd.Stderr = os.Stderr
 	cmd.Env = os.Environ()
 
+	var ddOutput io.Writer = os.Stderr
+	if params.Output != "" {
+		switch params.Output {
+		case "/dev/stderr":
+		case "/dev/null":
+			f, err := os.Open("/dev/null")
+			if err == nil {
+				defer f.Close()
+				ddOutput = f
+			} else {
+				ddOutput = bytes.NewBufferString("")
+			}
+		case "/dev/stdout":
+			ddOutput = os.Stdout
+		default:
+			f, err := os.OpenFile(params.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err == nil {
+				defer f.Close()
+				ddOutput = f
+			} else {
+				ddOutput = bytes.NewBufferString("")
+			}
+		}
+	}
+
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(
 		signalChan, syscall.SIGHUP, syscall.SIGINT,
@@ -108,7 +136,7 @@ func Main(params Params) error {
 			if err != nil {
 				return wrapWithExitCode(err, cmd.ProcessState.ExitCode())
 			}
-			return send(getMetrics(duration, time.Now(), params), ddClient)
+			return send(getMetrics(duration, time.Now(), params), ddClient, ddOutput)
 		case sig := <-signalChan:
 			if _, ok := sentSignals[sig]; ok {
 				continue
@@ -134,9 +162,9 @@ func getMetrics(
 	return []datadog.Metric{metric}
 }
 
-func send(metrics []datadog.Metric, ddClient metricsPoster) error {
+func send(metrics []datadog.Metric, ddClient metricsPoster, ddOutput io.Writer) error {
 	if err := ddClient.PostMetrics(metrics); err != nil {
-		fmt.Fprintln(os.Stderr, "send a time series metrics to DataDog: %w", err)
+		fmt.Fprintln(ddOutput, "send a time series metrics to DataDog:", err)
 		return nil
 	}
 	return nil
