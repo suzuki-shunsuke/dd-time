@@ -18,6 +18,7 @@ import (
 
 type (
 	Params struct {
+		Append        bool
 		MetricName    string
 		MetricHost    string
 		DataDogAPIKey string
@@ -101,7 +102,15 @@ func Main(params Params) error {
 		case "/dev/stdout":
 			ddOutput = os.Stdout
 		default:
-			f, err := os.OpenFile(params.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			var (
+				f   io.WriteCloser
+				err error
+			)
+			if params.Append {
+				f, err = os.OpenFile(params.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			} else {
+				f, err = os.Open(params.Output)
+			}
 			if err == nil {
 				defer f.Close()
 				ddOutput = f
