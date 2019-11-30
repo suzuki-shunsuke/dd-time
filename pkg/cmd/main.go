@@ -46,6 +46,7 @@ func Main(params Params) error {
 	ddClient := datadog.NewClient(params.DataDogAPIKey, "")
 
 	cmd := exec.Command(params.Args[0], params.Args[1:]...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
