@@ -28,6 +28,38 @@ type (
 	}
 )
 
+type withExitCodeError struct {
+	err  error
+	code int
+}
+
+func wrapWithExitCode(err error, code int) error {
+	return &withExitCodeError{
+		err:  err,
+		code: code,
+	}
+}
+
+func (err *withExitCodeError) ExitCode() int {
+	return err.code
+}
+
+func (err *withExitCodeError) Error() string {
+	return err.err.Error()
+}
+
+func (err *withExitCodeError) Unwrap() error {
+	return err.err
+}
+
+func GetExitCode(err error) int {
+	var ecerr *withExitCodeError
+	if errors.As(err, &ecerr) {
+		return ecerr.ExitCode()
+	}
+	return 1
+}
+
 func validateParams(params Params) error {
 	if params.DataDogAPIKey == "" {
 		return errors.New("The environment variable 'DATADOG_API_KEY' is required")
@@ -74,7 +106,7 @@ func Main(params Params) error {
 		case err := <-exitChan:
 			duration := time.Since(startT).Seconds()
 			if err != nil {
-				return err
+				return wrapWithExitCode(err, cmd.ProcessState.ExitCode())
 			}
 			return send(getMetrics(duration, time.Now(), params), ddClient)
 		case sig := <-signalChan:
