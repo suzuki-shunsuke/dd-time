@@ -19,5 +19,5 @@ OPTIONS:
   --host value                   The name of the host that produced the metric
   --tag value, -t value          A tag associated with the metric
   --output value, -o value       The file path where the dd-time's standard error output is written
-	--append, -a                   Write the dd-time's standard error output by the appended mode`
+  --append, -a                   Write the dd-time's standard error output by the appended mode`
 )
