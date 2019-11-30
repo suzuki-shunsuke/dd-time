@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -155,25 +156,30 @@ func Main(params Params) error {
 
 func getCircleCITags() []string {
 	// https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
-	return []string{
-		"circleci:true",
-		"circle_branch:" + os.Getenv("CIRCLE_BRANCH"),
-		"circle_build_num:" + os.Getenv("CIRCLE_BUILD_NUM"),
-		"circle_build_url:" + os.Getenv("CIRCLE_BUILD_URL"),
-		"circle_job:" + os.Getenv("CIRCLE_JOB"),
-		"circle_node_index:" + os.Getenv("CIRCLE_NODE_INDEX"),
-		"circle_node_total:" + os.Getenv("CIRCLE_NODE_TOTAL"),
-		"circle_pr_number:" + os.Getenv("CIRCLE_PR_NUMBER"),
-		"circle_pr_reponame:" + os.Getenv("CIRCLE_PR_REPONAME"),
-		"circle_pr_username:" + os.Getenv("CIRCLE_PR_USERNAME"),
-		"circle_project_reponame:" + os.Getenv("CIRCLE_PROJECT_REPONAME"),
-		"circle_project_username:" + os.Getenv("CIRCLE_PROJECT_USERNAME"),
-		"circle_repository_url:" + os.Getenv("CIRCLE_REPOSITORY_URL"),
-		"circle_sha1:" + os.Getenv("CIRCLE_SHA1"),
-		"circle_tag:" + os.Getenv("CIRCLE_TAG"),
-		"circle_username:" + os.Getenv("CIRCLE_USERNAME"),
-		"circle_workflow_id:" + os.Getenv("CIRCLE_WORKFLOW_ID"),
+	envs := []string{
+		"CIRCLECI",
+		"CIRCLE_BRANCH",
+		"CIRCLE_BUILD_NUM",
+		"CIRCLE_BUILD_URL",
+		"CIRCLE_JOB",
+		"CIRCLE_NODE_INDEX",
+		"CIRCLE_NODE_TOTAL",
+		"CIRCLE_PR_NUMBER",
+		"CIRCLE_PR_REPONAME",
+		"CIRCLE_PR_USERNAME",
+		"CIRCLE_PROJECT_REPONAME",
+		"CIRCLE_PROJECT_USERNAME",
+		"CIRCLE_REPOSITORY_URL",
+		"CIRCLE_SHA1",
+		"CIRCLE_TAG",
+		"CIRCLE_USERNAME",
+		"CIRCLE_WORKFLOW_ID",
 	}
+	arr := make([]string, len(envs))
+	for i, e := range envs {
+		arr[i] = strings.ToLower(e) + ":" + os.Getenv(e)
+	}
+	return arr
 }
 
 func getTags() []string {
