@@ -49,6 +49,7 @@ func Main(params Params) error {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(
