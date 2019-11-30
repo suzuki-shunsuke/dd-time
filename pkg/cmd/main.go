@@ -70,7 +70,7 @@ func Main(params Params) error {
 	for {
 		select {
 		case err := <-exitChan:
-			duration := float64(time.Since(startT))
+			duration := time.Since(startT).Seconds()
 			if err != nil {
 				return err
 			}
