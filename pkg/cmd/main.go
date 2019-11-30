@@ -153,13 +153,43 @@ func Main(params Params) error {
 	}
 }
 
+func getCircleCITags() []string {
+	// https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
+	return []string{
+		"circleci:true",
+		"circle_branch:" + os.Getenv("CIRCLE_BRANCH"),
+		"circle_build_num:" + os.Getenv("CIRCLE_BUILD_NUM"),
+		"circle_build_url:" + os.Getenv("CIRCLE_BUILD_URL"),
+		"circle_job:" + os.Getenv("CIRCLE_JOB"),
+		"circle_node_index:" + os.Getenv("CIRCLE_NODE_INDEX"),
+		"circle_node_total:" + os.Getenv("CIRCLE_NODE_TOTAL"),
+		"circle_pr_number:" + os.Getenv("CIRCLE_PR_NUMBER"),
+		"circle_pr_reponame:" + os.Getenv("CIRCLE_PR_REPONAME"),
+		"circle_pr_username:" + os.Getenv("CIRCLE_PR_USERNAME"),
+		"circle_project_reponame:" + os.Getenv("CIRCLE_PROJECT_REPONAME"),
+		"circle_project_username:" + os.Getenv("CIRCLE_PROJECT_USERNAME"),
+		"circle_repository_url:" + os.Getenv("CIRCLE_REPOSITORY_URL"),
+		"circle_sha1:" + os.Getenv("CIRCLE_SHA1"),
+		"circle_tag:" + os.Getenv("CIRCLE_TAG"),
+		"circle_username:" + os.Getenv("CIRCLE_USERNAME"),
+		"circle_workflow_id:" + os.Getenv("CIRCLE_WORKFLOW_ID"),
+	}
+}
+
+func getTags() []string {
+	if os.Getenv("CIRCLECI") == "true" {
+		return getCircleCITags()
+	}
+	return nil
+}
+
 func getMetrics(
 	duration float64, now time.Time, params Params,
 ) []datadog.Metric {
 	nowF := float64(now.Unix())
 	metric := datadog.Metric{
 		Metric: &params.MetricName,
-		Tags:   params.Tags,
+		Tags:   append(params.Tags, getTags()...),
 		Points: []datadog.DataPoint{{&nowF, &duration}},
 	}
 	if params.MetricHost != "" {
