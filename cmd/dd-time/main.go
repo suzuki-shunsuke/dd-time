@@ -34,7 +34,7 @@ type (
 func parseArgs() options {
 	helpF := pflag.BoolP("help", "h", false, "Show this help message")
 	verF := pflag.BoolP("version", "v", false, "Show the version")
-	metricNameF := pflag.StringP("metric-name", "m", "command-execution-time", "The name of the time series")
+	metricNameF := pflag.StringP("metric-name", "m", "command_execution_time", "The name of the time series")
 	metricHostF := pflag.String("host", "", "The name of the host that produced the metric")
 	outputDDTimeF := pflag.StringP("output", "o", "", "The file path where the dd-time's standard error output is written")
 	appendF := pflag.BoolP("append", "a", false, "Write the dd-time's standard error output by the appended mode")
