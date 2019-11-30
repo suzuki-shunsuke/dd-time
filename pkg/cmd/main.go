@@ -74,6 +74,31 @@ func validateParams(params Params) error {
 	return nil
 }
 
+func getDDOutput(output string, appended bool) (io.Writer, func() error) {
+	switch output {
+	case "", "/dev/stderr":
+		return os.Stderr, nil
+	case "/dev/null":
+		return bytes.NewBufferString(""), nil
+	case "/dev/stdout":
+		return os.Stdout, nil
+	default:
+		var (
+			f   io.WriteCloser
+			err error
+		)
+		if appended {
+			f, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		} else {
+			f, err = os.Open(output)
+		}
+		if err != nil {
+			return bytes.NewBufferString(""), nil
+		}
+		return f, f.Close
+	}
+}
+
 func Main(params Params) error {
 	if err := validateParams(params); err != nil {
 		return err
@@ -87,37 +112,9 @@ func Main(params Params) error {
 	cmd.Stderr = os.Stderr
 	cmd.Env = os.Environ()
 
-	var ddOutput io.Writer = os.Stderr
-	if params.Output != "" {
-		switch params.Output {
-		case "/dev/stderr":
-		case "/dev/null":
-			f, err := os.Open("/dev/null")
-			if err == nil {
-				defer f.Close()
-				ddOutput = f
-			} else {
-				ddOutput = bytes.NewBufferString("")
-			}
-		case "/dev/stdout":
-			ddOutput = os.Stdout
-		default:
-			var (
-				f   io.WriteCloser
-				err error
-			)
-			if params.Append {
-				f, err = os.OpenFile(params.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			} else {
-				f, err = os.Open(params.Output)
-			}
-			if err == nil {
-				defer f.Close()
-				ddOutput = f
-			} else {
-				ddOutput = bytes.NewBufferString("")
-			}
-		}
+	ddOutput, closeOutput := getDDOutput(params.Output, params.Append)
+	if closeOutput != nil {
+		defer closeOutput()
 	}
 
 	signalChan := make(chan os.Signal, 1)
