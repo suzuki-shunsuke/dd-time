@@ -37,7 +37,7 @@ func parseArgs() options {
 	metricNameF := pflag.StringP("metric-name", "m", "command-execution-time", "The name of the time series")
 	metricHostF := pflag.String("host", "", "The name of the host that produced the metric")
 	outputDDTimeF := pflag.StringP("output", "o", "", "The file path where the dd-time's standard error output is written")
-	appendF := pflag.BoolP("append", "a", false, "Write the error by the append mode")
+	appendF := pflag.BoolP("append", "a", false, "Write the dd-time's standard error output by the appended mode")
 	tagsF := pflag.StringSliceP("tag", "t", nil, "DataDog tags. The format is 'key:value'")
 	pflag.Parse()
 	return options{
