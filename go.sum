@@ -14,6 +14,8 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/suzuki-shunsuke/go-cliutil v0.0.0-20181211154308-176f852d9bca/go.mod h1:Vq3NkhgmA9DT/2UZ08x/3A34xxvzQ/vTMABnTWKoMbY=
+github.com/suzuki-shunsuke/go-error-with-exit-code v0.2.0 h1:7xR2Lxk1NRLvrSQeHNodUWUxxyIeUv4bOBKFnxXDLRg=
+github.com/suzuki-shunsuke/go-error-with-exit-code v0.2.0/go.mod h1:tpm3UnD+WSEPI1BUn/t3jM/7orIWUjrtlREQJrruX/E=
 github.com/suzuki-shunsuke/go-ptr v1.0.0 h1:sVR6ICMJbdCyOpxzrflHErkO8KmItPFDu0E0PoQR0W8=
 github.com/suzuki-shunsuke/go-ptr v1.0.0/go.mod h1:4WKv+CJynv3Veutqvmt7yPUqEsZp0vezqFxVRukjga0=
 github.com/suzuki-shunsuke/go-timeout v0.2.1 h1:owpOlUxNfBUEc30+POjbTXdDRahBJ6ExD5qngVTbWp8=
