@@ -8,12 +8,13 @@ import (
 
 	"github.com/suzuki-shunsuke/dd-time/pkg/cmd"
 	"github.com/suzuki-shunsuke/dd-time/pkg/constant"
+	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
 func main() {
 	if err := core(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(cmd.GetExitCode(err))
+		os.Exit(ecerror.GetExitCode(err))
 	}
 }
 
