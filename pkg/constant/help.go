@@ -10,7 +10,7 @@ USAGE:
 
 ENVIRONMENT VARIABLE
 
-  DATADOG_APK_KEY (required) - DataDog APK Key
+  DATADOG_API_KEY - DataDog API Key. If DATADOG_API_KEY isn't set, the metrics can't be sent to DataDog but the command is run normally
 
 OPTIONS:
   --help, -h                     show help

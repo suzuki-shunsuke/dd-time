@@ -35,9 +35,6 @@ type (
 )
 
 func validateParams(params Params) error {
-	if params.DataDogAPIKey == "" {
-		return errors.New("The environment variable 'DATADOG_API_KEY' is required")
-	}
 	if len(params.Args) == 0 {
 		return errors.New("executed command isn't passed to dd-time")
 	}
@@ -74,7 +71,10 @@ func Main(params Params) error {
 		return err
 	}
 
-	ddClient := datadog.NewClient(params.DataDogAPIKey, "")
+	var ddClient metricsPoster
+	if params.DataDogAPIKey != "" {
+		ddClient = datadog.NewClient(params.DataDogAPIKey, "")
+	}
 
 	cmd := exec.Command(params.Args[0], params.Args[1:]...)
 	cmd.Stdin = os.Stdin
@@ -108,6 +108,9 @@ func Main(params Params) error {
 	for {
 		select {
 		case err := <-exitChan:
+			if ddClient == nil {
+				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+			}
 			duration := time.Since(startT).Seconds()
 			if err != nil {
 				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
