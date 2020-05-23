@@ -88,14 +88,13 @@ func Main(ctx context.Context, params Params) error {
 	runner := timeout.NewRunner(0)
 
 	startT := time.Now()
-	err := runner.Run(ctx, cmd)
+	if err := runner.Run(ctx, cmd); err != nil {
+		return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+	}
 	duration := time.Since(startT).Seconds()
 
 	if ddClient == nil {
-		return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
-	}
-	if err != nil {
-		return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+		return nil
 	}
 	return send(getMetrics(duration, time.Now(), params), ddClient, ddOutput)
 }
