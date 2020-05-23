@@ -64,6 +64,22 @@ func getDDOutput(output string, appended bool) (io.Writer, func() error) {
 	}
 }
 
+func execute(ctx context.Context, params *Params) (float64, error) {
+	cmd := exec.Command(params.Args[0], params.Args[1:]...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+
+	runner := timeout.NewRunner(0)
+
+	startT := time.Now()
+	if err := runner.Run(ctx, cmd); err != nil {
+		return 0, ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+	}
+	return time.Since(startT).Seconds(), nil
+}
+
 func Main(ctx context.Context, params Params) error {
 	if err := validateParams(params); err != nil {
 		return err
@@ -74,24 +90,15 @@ func Main(ctx context.Context, params Params) error {
 		ddClient = datadog.NewClient(params.DataDogAPIKey, "")
 	}
 
-	cmd := exec.Command(params.Args[0], params.Args[1:]...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Env = os.Environ()
-
 	ddOutput, closeOutput := getDDOutput(params.Output, params.Append)
 	if closeOutput != nil {
 		defer closeOutput()
 	}
 
-	runner := timeout.NewRunner(0)
-
-	startT := time.Now()
-	if err := runner.Run(ctx, cmd); err != nil {
-		return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+	duration, err := execute(ctx, &params)
+	if err != nil {
+		return err
 	}
-	duration := time.Since(startT).Seconds()
 
 	if ddClient == nil {
 		return nil
