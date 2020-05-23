@@ -80,9 +80,21 @@ func execute(ctx context.Context, params *Params) (float64, error) {
 	return time.Since(startT).Seconds(), nil
 }
 
-func Main(ctx context.Context, params Params) error {
+func Main(ctx context.Context, params Params) int {
+	ddOutput, closeOutput := getDDOutput(params.Output, params.Append)
+	if closeOutput != nil {
+		defer closeOutput()
+	}
+	msg, code := core(ctx, params)
+	if msg != "" {
+		fmt.Fprintln(ddOutput, msg)
+	}
+	return code
+}
+
+func core(ctx context.Context, params Params) (string, int) {
 	if err := validateParams(params); err != nil {
-		return err
+		return err.Error(), 1
 	}
 
 	var ddClient metricsPoster
@@ -90,20 +102,18 @@ func Main(ctx context.Context, params Params) error {
 		ddClient = datadog.NewClient(params.DataDogAPIKey, "")
 	}
 
-	ddOutput, closeOutput := getDDOutput(params.Output, params.Append)
-	if closeOutput != nil {
-		defer closeOutput()
-	}
-
 	duration, err := execute(ctx, &params)
 	if err != nil {
-		return err
+		return err.Error(), ecerror.GetExitCode(err)
 	}
 
 	if ddClient == nil {
-		return nil
+		return "", 0
 	}
-	return send(getMetrics(duration, time.Now(), params), ddClient, ddOutput)
+	if err := send(getMetrics(duration, time.Now(), params), ddClient); err != nil {
+		return err.Error(), 0
+	}
+	return "", 0
 }
 
 func getCircleCITags() []string {
@@ -156,10 +166,9 @@ func getMetrics(
 	return []datadog.Metric{metric}
 }
 
-func send(metrics []datadog.Metric, ddClient metricsPoster, ddOutput io.Writer) error {
+func send(metrics []datadog.Metric, ddClient metricsPoster) error {
 	if err := ddClient.PostMetrics(metrics); err != nil {
-		fmt.Fprintln(ddOutput, "send a time series metrics to DataDog:", err)
-		return nil
+		return fmt.Errorf("send a time series metrics to DataDog: %w", err)
 	}
 	return nil
 }
