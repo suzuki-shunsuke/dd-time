@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -8,6 +9,7 @@ import (
 
 	"github.com/suzuki-shunsuke/dd-time/pkg/cmd"
 	"github.com/suzuki-shunsuke/dd-time/pkg/constant"
+	"github.com/suzuki-shunsuke/dd-time/pkg/signal"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 )
 
@@ -66,7 +68,11 @@ func core() error {
 		return nil
 	}
 
-	return cmd.Main(cmd.Params{
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go signal.Handle(cancel)
+
+	return cmd.Main(ctx, cmd.Params{
 		DataDogAPIKey: opts.DataDogAPIKey,
 		Args:          opts.Args,
 		Tags:          opts.Tags,

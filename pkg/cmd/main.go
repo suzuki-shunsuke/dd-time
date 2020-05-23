@@ -8,9 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
@@ -66,7 +64,7 @@ func getDDOutput(output string, appended bool) (io.Writer, func() error) {
 	}
 }
 
-func Main(params Params) error {
+func Main(ctx context.Context, params Params) error {
 	if err := validateParams(params); err != nil {
 		return err
 	}
@@ -87,43 +85,19 @@ func Main(params Params) error {
 		defer closeOutput()
 	}
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(
-		signalChan, syscall.SIGHUP, syscall.SIGINT,
-		syscall.SIGTERM, syscall.SIGQUIT)
-
 	runner := timeout.NewRunner(0)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	sentSignals := map[os.Signal]struct{}{}
-	exitChan := make(chan error, 1)
+	startT := time.Now()
+	err := runner.Run(ctx, cmd)
+	duration := time.Since(startT).Seconds()
 
-	var startT time.Time
-	go func() {
-		startT = time.Now()
-		exitChan <- runner.Run(ctx, cmd)
-	}()
-
-	for {
-		select {
-		case err := <-exitChan:
-			if ddClient == nil {
-				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
-			}
-			duration := time.Since(startT).Seconds()
-			if err != nil {
-				return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
-			}
-			return send(getMetrics(duration, time.Now(), params), ddClient, ddOutput)
-		case sig := <-signalChan:
-			if _, ok := sentSignals[sig]; ok {
-				continue
-			}
-			sentSignals[sig] = struct{}{}
-			runner.SendSignal(sig.(syscall.Signal))
-		}
+	if ddClient == nil {
+		return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
 	}
+	if err != nil {
+		return ecerror.Wrap(err, cmd.ProcessState.ExitCode())
+	}
+	return send(getMetrics(duration, time.Now(), params), ddClient, ddOutput)
 }
 
 func getCircleCITags() []string {
