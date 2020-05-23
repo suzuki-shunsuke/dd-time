@@ -8,9 +8,9 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 	"time"
 
+	ddog "github.com/suzuki-shunsuke/dd-time/pkg/datadog"
 	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
 	"github.com/suzuki-shunsuke/go-timeout/timeout"
 	"github.com/zorkian/go-datadog-api"
@@ -26,6 +26,30 @@ func Main(ctx context.Context, params Params) int {
 		fmt.Fprintln(ddOutput, msg)
 	}
 	return code
+}
+
+func core(ctx context.Context, params Params) (string, int) {
+	if err := validateParams(params); err != nil {
+		return err.Error(), 1
+	}
+
+	var ddClient metricsPoster
+	if params.DataDogAPIKey != "" {
+		ddClient = datadog.NewClient(params.DataDogAPIKey, "")
+	}
+
+	duration, err := execute(ctx, &params)
+	if err != nil {
+		return err.Error(), ecerror.GetExitCode(err)
+	}
+
+	if ddClient == nil {
+		return "", 0
+	}
+	if err := send(getMetrics(duration, time.Now(), params), ddClient); err != nil {
+		return err.Error(), 0
+	}
+	return "", 0
 }
 
 type (
@@ -92,72 +116,13 @@ func execute(ctx context.Context, params *Params) (float64, error) {
 	return time.Since(startT).Seconds(), nil
 }
 
-func core(ctx context.Context, params Params) (string, int) {
-	if err := validateParams(params); err != nil {
-		return err.Error(), 1
-	}
-
-	var ddClient metricsPoster
-	if params.DataDogAPIKey != "" {
-		ddClient = datadog.NewClient(params.DataDogAPIKey, "")
-	}
-
-	duration, err := execute(ctx, &params)
-	if err != nil {
-		return err.Error(), ecerror.GetExitCode(err)
-	}
-
-	if ddClient == nil {
-		return "", 0
-	}
-	if err := send(getMetrics(duration, time.Now(), params), ddClient); err != nil {
-		return err.Error(), 0
-	}
-	return "", 0
-}
-
-func getCircleCITags() []string {
-	// https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
-	envs := []string{
-		"CIRCLECI",
-		"CIRCLE_BRANCH",
-		"CIRCLE_BUILD_NUM",
-		"CIRCLE_BUILD_URL",
-		"CIRCLE_JOB",
-		"CIRCLE_NODE_INDEX",
-		"CIRCLE_NODE_TOTAL",
-		"CIRCLE_PR_NUMBER",
-		"CIRCLE_PR_REPONAME",
-		"CIRCLE_PR_USERNAME",
-		"CIRCLE_PROJECT_REPONAME",
-		"CIRCLE_PROJECT_USERNAME",
-		"CIRCLE_REPOSITORY_URL",
-		"CIRCLE_SHA1",
-		"CIRCLE_TAG",
-		"CIRCLE_USERNAME",
-		"CIRCLE_WORKFLOW_ID",
-	}
-	arr := make([]string, len(envs))
-	for i, e := range envs {
-		arr[i] = strings.ToLower(e) + ":" + os.Getenv(e)
-	}
-	return arr
-}
-
-func getTags() []string {
-	if os.Getenv("CIRCLECI") == "true" {
-		return getCircleCITags()
-	}
-	return nil
-}
-
 func getMetrics(
 	duration float64, now time.Time, params Params,
 ) []datadog.Metric {
 	nowF := float64(now.Unix())
 	metric := datadog.Metric{
 		Metric: &params.MetricName,
-		Tags:   append(params.Tags, getTags()...),
+		Tags:   append(params.Tags, ddog.GetTags()...),
 		Points: []datadog.DataPoint{{&nowF, &duration}},
 	}
 	if params.MetricHost != "" {
