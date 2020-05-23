@@ -16,6 +16,18 @@ import (
 	"github.com/zorkian/go-datadog-api"
 )
 
+func Main(ctx context.Context, params Params) int {
+	ddOutput, closeOutput := getDDOutput(params.Output, params.Append)
+	if closeOutput != nil {
+		defer closeOutput()
+	}
+	msg, code := core(ctx, params)
+	if msg != "" {
+		fmt.Fprintln(ddOutput, msg)
+	}
+	return code
+}
+
 type (
 	Params struct {
 		Append        bool
@@ -78,18 +90,6 @@ func execute(ctx context.Context, params *Params) (float64, error) {
 		return 0, ecerror.Wrap(err, cmd.ProcessState.ExitCode())
 	}
 	return time.Since(startT).Seconds(), nil
-}
-
-func Main(ctx context.Context, params Params) int {
-	ddOutput, closeOutput := getDDOutput(params.Output, params.Append)
-	if closeOutput != nil {
-		defer closeOutput()
-	}
-	msg, code := core(ctx, params)
-	if msg != "" {
-		fmt.Fprintln(ddOutput, msg)
-	}
-	return code
 }
 
 func core(ctx context.Context, params Params) (string, int) {

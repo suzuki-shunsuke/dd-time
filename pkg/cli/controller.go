@@ -11,6 +11,33 @@ import (
 	"github.com/suzuki-shunsuke/dd-time/pkg/signal"
 )
 
+func Core() int {
+	opts := parseArgs()
+
+	if opts.Help {
+		fmt.Println(constant.Help)
+		return 0
+	}
+	if opts.Version {
+		fmt.Println(constant.Version)
+		return 0
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go signal.Handle(cancel)
+
+	return cmd.Main(ctx, cmd.Params{
+		DataDogAPIKey: opts.DataDogAPIKey,
+		Args:          opts.Args,
+		Tags:          opts.Tags,
+		MetricName:    opts.MetricName,
+		MetricHost:    opts.MetricHost,
+		Output:        opts.Output,
+		Append:        opts.Append,
+	})
+}
+
 type (
 	options struct {
 		Help          bool
@@ -45,31 +72,4 @@ func parseArgs() options {
 		Output:        *outputDDTimeF,
 		Append:        *appendF,
 	}
-}
-
-func Core() int {
-	opts := parseArgs()
-
-	if opts.Help {
-		fmt.Println(constant.Help)
-		return 0
-	}
-	if opts.Version {
-		fmt.Println(constant.Version)
-		return 0
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go signal.Handle(cancel)
-
-	return cmd.Main(ctx, cmd.Params{
-		DataDogAPIKey: opts.DataDogAPIKey,
-		Args:          opts.Args,
-		Tags:          opts.Tags,
-		MetricName:    opts.MetricName,
-		MetricHost:    opts.MetricHost,
-		Output:        opts.Output,
-		Append:        opts.Append,
-	})
 }
