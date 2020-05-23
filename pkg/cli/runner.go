@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/pflag"
-	"github.com/suzuki-shunsuke/dd-time/pkg/cmd"
 	"github.com/suzuki-shunsuke/dd-time/pkg/constant"
+	"github.com/suzuki-shunsuke/dd-time/pkg/controller"
 	"github.com/suzuki-shunsuke/dd-time/pkg/signal"
 )
 
@@ -27,7 +27,7 @@ func Core() int {
 	defer cancel()
 	go signal.Handle(cancel)
 
-	return cmd.Main(ctx, cmd.Params{
+	return controller.Main(ctx, controller.Params{
 		DataDogAPIKey: opts.DataDogAPIKey,
 		Args:          opts.Args,
 		Tags:          opts.Tags,
