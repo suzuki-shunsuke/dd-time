@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -8,13 +9,12 @@ import (
 
 	"github.com/suzuki-shunsuke/dd-time/pkg/cmd"
 	"github.com/suzuki-shunsuke/dd-time/pkg/constant"
-	"github.com/suzuki-shunsuke/go-error-with-exit-code/ecerror"
+	"github.com/suzuki-shunsuke/dd-time/pkg/signal"
 )
 
 func main() {
-	if err := core(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(ecerror.GetExitCode(err))
+	if code := core(); code != 0 {
+		os.Exit(code)
 	}
 }
 
@@ -54,19 +54,23 @@ func parseArgs() options {
 	}
 }
 
-func core() error {
+func core() int {
 	opts := parseArgs()
 
 	if opts.Help {
 		fmt.Println(constant.Help)
-		return nil
+		return 0
 	}
 	if opts.Version {
 		fmt.Println(constant.Version)
-		return nil
+		return 0
 	}
 
-	return cmd.Main(cmd.Params{
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go signal.Handle(cancel)
+
+	return cmd.Main(ctx, cmd.Params{
 		DataDogAPIKey: opts.DataDogAPIKey,
 		Args:          opts.Args,
 		Tags:          opts.Tags,
