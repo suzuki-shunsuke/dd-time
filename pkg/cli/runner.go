@@ -27,7 +27,9 @@ func Core() int {
 	defer cancel()
 	go signal.Handle(cancel)
 
-	return controller.Main(ctx, controller.Params{
+	ctrl := controller.New(opts.DataDogAPIKey)
+
+	return ctrl.Main(ctx, controller.Params{
 		DataDogAPIKey: opts.DataDogAPIKey,
 		Args:          opts.Args,
 		Tags:          opts.Tags,
