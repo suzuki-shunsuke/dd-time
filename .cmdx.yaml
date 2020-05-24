@@ -51,3 +51,10 @@ tasks:
   description: shfmt
   usage: shfmt
   script: shfmt -l -w scripts/* githooks/*
+- name: coverage
+  short: c
+  description: test a package (fzf is required)
+  usage: test a package (fzf is required)
+  script: "bash scripts/coverage.sh {{.path}}"
+  args:
+  - name: path
