@@ -32,6 +32,7 @@ func Test_getMetrics(t *testing.T) {
 	}
 	client := &Client{}
 	for _, d := range data {
+		d := d
 		t.Run(d.title, func(t *testing.T) {
 			assert.Equal(t, d.exp, client.getMetrics(d.params))
 		})

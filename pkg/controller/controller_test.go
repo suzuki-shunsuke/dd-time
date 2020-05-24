@@ -39,6 +39,7 @@ func TestController_validateParams(t *testing.T) {
 	}
 	ctrl := &Controller{}
 	for _, d := range data {
+		d := d
 		t.Run(d.title, func(t *testing.T) {
 			err := ctrl.validateParams(d.params)
 			if d.isErr {
@@ -74,10 +75,11 @@ func TestController_getDDOutput(t *testing.T) {
 	}
 	ctrl := &Controller{}
 	for _, d := range data {
+		d := d
 		t.Run(d.title, func(t *testing.T) {
 			_, closeFn := ctrl.getDDOutput(d.output, d.appended)
 			if closeFn != nil {
-				closeFn()
+				closeFn() //nolint:errcheck
 			}
 		})
 	}
@@ -171,6 +173,7 @@ func TestController_core(t *testing.T) {
 	}
 	ctx := context.Background()
 	for _, d := range data {
+		d := d
 		t.Run(d.title, func(t *testing.T) {
 			_, code := d.ctrl.core(ctx, d.params)
 			require.Equal(t, d.code, code)
@@ -247,6 +250,7 @@ func TestController_Main(t *testing.T) {
 	}
 	ctx := context.Background()
 	for _, d := range data {
+		d := d
 		t.Run(d.title, func(t *testing.T) {
 			code := d.ctrl.Main(ctx, d.params)
 			require.Equal(t, d.code, code)
