@@ -1,3 +1,4 @@
 /dist
 /profile.out
 /coverage.txt
+.coverage
