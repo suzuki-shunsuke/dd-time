@@ -66,7 +66,7 @@ func (ctrl *Controller) core(ctx context.Context, params Params) (string, int) {
 		MetricHost: params.MetricHost,
 		Tags:       append(params.Tags, ddog.GetTags()...),
 		Duration:   duration,
-		Now:        float64(ctrl.Now().Unix()),
+		Now:        float64(startT.Unix()),
 	}); err != nil {
 		return "send a time series metrics to DataDog: " + err.Error(), 0
 	}
