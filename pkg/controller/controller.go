@@ -41,7 +41,7 @@ func New(apiKey string) *Controller {
 func (ctrl *Controller) Main(ctx context.Context, params Params) int {
 	ddOutput, closeOutput := ctrl.getDDOutput(params.Output, params.Append)
 	if closeOutput != nil {
-		defer closeOutput()
+		defer closeOutput() //nolint:errcheck
 	}
 	msg, code := ctrl.core(ctx, params)
 	if msg != "" {
