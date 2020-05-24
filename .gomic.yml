@@ -1,9 +1,0 @@
----
-items:
-- src:
-    dir: pkg/cmd
-    interface: metricsPoster
-    name: MetricsPoster
-  dest:
-    package: mock
-    file: pkg/mock/datadog_client.go
