@@ -26,11 +26,11 @@ type Executor interface {
 }
 
 type DataDogClient interface {
-	Send(*ddog.Params) error
+	Send(ddog.Params) error
 }
 
-func New(apiKey string) *Controller {
-	return &Controller{
+func New(apiKey string) Controller {
+	return Controller{
 		Exec:    execute.New(),
 		Now:     time.Now,
 		Since:   time.Since,
@@ -38,7 +38,7 @@ func New(apiKey string) *Controller {
 	}
 }
 
-func (ctrl *Controller) Main(ctx context.Context, params Params) int {
+func (ctrl Controller) Main(ctx context.Context, params Params) int {
 	ddOutput, closeOutput := ctrl.getDDOutput(params.Output, params.Append)
 	if closeOutput != nil {
 		defer closeOutput() //nolint:errcheck
@@ -50,7 +50,7 @@ func (ctrl *Controller) Main(ctx context.Context, params Params) int {
 	return code
 }
 
-func (ctrl *Controller) core(ctx context.Context, params Params) (string, int) {
+func (ctrl Controller) core(ctx context.Context, params Params) (string, int) {
 	if err := ctrl.validateParams(params); err != nil {
 		return err.Error(), 1
 	}
@@ -61,7 +61,7 @@ func (ctrl *Controller) core(ctx context.Context, params Params) (string, int) {
 	}
 	duration := ctrl.Since(startT).Seconds()
 
-	if err := ctrl.DataDog.Send(&ddog.Params{
+	if err := ctrl.DataDog.Send(ddog.Params{
 		MetricName: params.MetricName,
 		MetricHost: params.MetricHost,
 		Tags:       append(params.Tags, ddog.GetTags()...),
@@ -85,14 +85,14 @@ type (
 	}
 )
 
-func (ctrl *Controller) validateParams(params Params) error {
+func (ctrl Controller) validateParams(params Params) error {
 	if len(params.Args) == 0 {
 		return errors.New("executed command isn't passed to dd-time")
 	}
 	return nil
 }
 
-func (ctrl *Controller) getDDOutput(output string, appended bool) (io.Writer, func() error) {
+func (ctrl Controller) getDDOutput(output string, appended bool) (io.Writer, func() error) {
 	switch output {
 	case "", "/dev/stderr":
 		return os.Stderr, nil

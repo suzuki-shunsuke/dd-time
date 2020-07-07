@@ -13,11 +13,11 @@ func Test_getMetrics(t *testing.T) {
 	data := []struct {
 		title  string
 		exp    []datadog.Metric
-		params *Params
+		params Params
 	}{
 		{
 			title: "success",
-			params: &Params{
+			params: Params{
 				MetricName: "command-execution-time",
 				Duration:   5,
 				Now:        float64(time.Date(2019, 2, 10, 12, 0, 0, 0, time.UTC).Unix()),

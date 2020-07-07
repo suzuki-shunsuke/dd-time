@@ -20,24 +20,24 @@ type MetricsPoster interface {
 	PostMetrics(series []datadog.Metric) error
 }
 
-func New(apiKey string) *Client {
+func New(apiKey string) Client {
 	var ddClient MetricsPoster
 	if apiKey != "" {
 		ddClient = datadog.NewClient(apiKey, "")
 	}
-	return &Client{
+	return Client{
 		Poster: ddClient,
 	}
 }
 
-func (client *Client) Send(params *Params) error {
+func (client Client) Send(params Params) error {
 	if client.Poster == nil {
 		return nil
 	}
 	return client.Poster.PostMetrics(client.getMetrics(params))
 }
 
-func (client *Client) getMetrics(params *Params) []datadog.Metric {
+func (client Client) getMetrics(params Params) []datadog.Metric {
 	metric := datadog.Metric{
 		Metric: &params.MetricName,
 		Tags:   params.Tags,

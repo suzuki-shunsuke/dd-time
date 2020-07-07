@@ -89,7 +89,7 @@ type mockExecutor struct {
 	code int
 }
 
-func (exc *mockExecutor) Run(ctx context.Context, arg string, args ...string) error {
+func (exc mockExecutor) Run(ctx context.Context, arg string, args ...string) error {
 	if exc.code == 0 {
 		return nil
 	}
@@ -100,7 +100,7 @@ type mockDataDog struct {
 	err error
 }
 
-func (dd *mockDataDog) Send(*ddog.Params) error {
+func (dd mockDataDog) Send(ddog.Params) error {
 	return dd.err
 }
 
@@ -115,8 +115,8 @@ func TestController_core(t *testing.T) {
 			title: "invalid parameters",
 			code:  1,
 			ctrl: &Controller{
-				Exec:    &mockExecutor{},
-				DataDog: &mockDataDog{},
+				Exec:    mockExecutor{},
+				DataDog: mockDataDog{},
 				Now:     time.Now,
 				Since: func(t time.Time) time.Duration {
 					return 5 * time.Second
