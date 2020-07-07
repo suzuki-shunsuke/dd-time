@@ -13,8 +13,8 @@ type Env struct {
 }
 
 // New is a constructor of Env.
-func New() *Env {
-	return &Env{
+func New() Env {
+	return Env{
 		Stdin:   os.Stdin,
 		Stdout:  os.Stdout,
 		Stderr:  os.Stderr,

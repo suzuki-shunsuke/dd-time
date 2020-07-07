@@ -10,16 +10,16 @@ import (
 )
 
 type Executor struct {
-	Env *env.Env
+	Env env.Env
 }
 
-func New() *Executor {
-	return &Executor{
+func New() Executor {
+	return Executor{
 		Env: env.New(),
 	}
 }
 
-func (exc *Executor) Run(ctx context.Context, arg string, args ...string) error {
+func (exc Executor) Run(ctx context.Context, arg string, args ...string) error {
 	cmd := exec.Command(arg, args...)
 	cmd.Stdin = exc.Env.Stdin
 	cmd.Stdout = exc.Env.Stdout
