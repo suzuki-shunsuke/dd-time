@@ -7,9 +7,7 @@ import (
 	"syscall"
 )
 
-var (
-	once sync.Once //nolint:gochecknoglobals
-)
+var once sync.Once //nolint:gochecknoglobals
 
 func Handle(callback func()) {
 	once.Do(func() {
