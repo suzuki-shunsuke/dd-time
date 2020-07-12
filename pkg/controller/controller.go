@@ -106,7 +106,7 @@ func (ctrl Controller) getDDOutput(output string, appended bool) (io.Writer, fun
 			err error
 		)
 		if appended {
-			f, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			f, err = os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		} else {
 			f, err = os.Open(output)
 		}
