@@ -8,6 +8,6 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/suzuki-shunsuke/go-error-with-exit-code v1.0.0
 	github.com/suzuki-shunsuke/go-ptr v1.0.0
-	github.com/suzuki-shunsuke/go-timeout v0.2.1
+	github.com/suzuki-shunsuke/go-timeout v1.0.0
 	github.com/zorkian/go-datadog-api v2.29.0+incompatible
 )
