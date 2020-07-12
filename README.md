@@ -42,7 +42,7 @@ ENVIRONMENT VARIABLE
 OPTIONS:
   --help, -h                     show help
   --version, -v                  print the version
-  --metric-name value, -m value  (default: "command-execution-time") The name of the time series
+  --metric-name value, -m value  (default: "command_execution_time") The name of the time series
   --host value                   The name of the host that produced the metric
   --tag value, -t value          A tag associated with the metric
   --output value, -o value       The file path where the dd-time's standard error output is written
